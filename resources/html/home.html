@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VERSE</title>
+    <style>
+      body {margin: 0;}
+    </style>
+  </head>
+  <body>
+    <div id="app">
+    </div>
+
+    <!-- scripts and styles -->
+    <!-- {% style "/assets/bulma/css/bulma.min.css" %} -->
+    <!-- {% style "/assets/material-icons/css/material-icons.min.css" %} -->
+    {% style "/css/screen.css" %}
+
+    <script type="text/javascript">
+      var path = "{{path}}";
+      var csrfToken = "{{csrf-token}}";
+    </script>
+    <script src="/js/three.js"></script>
+    {% script "/js/app.js" %}
+  </body>
+</html>
