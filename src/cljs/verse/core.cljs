@@ -21,12 +21,17 @@
 (defn fit-renderer
   [three]
   (let [element (dom-element three)
-        width (.-clientWidth element)
-        height (.-clientHeight element)
+        width js/window.innerWidth
+        height js/window.innerHeight
         needs-resize? (or
                        (not= (.-width element) width)
                        (not= (.-height element) height))]
-    (if needs-resize?
+    (when needs-resize?
+      (when-let [uniforms (:uniforms three)]
+        (when-let [resolution (.-iResolution uniforms)]
+          (.set (.-value resolution) width height 1)))
+      (set! (.-width (.-style element)) (str width "px"))
+      (set! (.-height (.-style element)) (str height "px"))
       (.setSize (:renderer three) width height false))
     needs-resize?))
 
@@ -40,7 +45,9 @@
 
 (defn base-vertex-shader
   []
-  "")
+  "
+
+")
 
 (def hello-shader
   "
@@ -55,7 +62,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   vec2 uv = fragCoord/iResolution.xy;
 
   // Time varying pixel color
-  vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+  vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx*40.0+vec3(0,2,4));
 
   // Output to screen
   fragColor = vec4(col,1.0);
@@ -106,6 +113,7 @@ void main() {
 
 (defn render-scene
   [three]
+  (fit-renderer three)
   (.render
    (:renderer three)
    (:scene three)
@@ -117,7 +125,6 @@ void main() {
         material (make-basic-material #js {:color 0x00ff00})
         cube (make-cube three material)]
     (letfn [(animate []
-              ;; (fit-renderer (:renderer three))
               (js/requestAnimationFrame animate)
               (set! (.-x (.-rotation cube)) (+ 0.01 (.-x (.-rotation cube))))
               (set! (.-y (.-rotation cube)) (+ 0.01 (.-y (.-rotation cube))))
@@ -128,15 +135,11 @@ void main() {
       (animate)
       [:<>])))
 
-;; (defonce current-time (atom 0.0))
-;; (def time-step 0.001)
-
 (defn make-shader-scene
   [fragment]
   (let [scene (js/THREE.Scene.)
         width js/window.innerWidth
         height js/window.innerHeight
-        aspect-ratio (/ width height)
         camera (make-orthographic-camera)
         renderer (js/THREE.WebGLRenderer.)
         geometry (js/THREE.PlaneGeometry. 2 2)
@@ -159,15 +162,10 @@ void main() {
 (defn home-page
   []
   (let [three (make-shader-scene hello-shader)]
-    (println "UNIFORMS" (:uniforms three))
     (letfn [(animate [now]
               (let [element (dom-element three)
                     width (.-width element)
                     height (.-height element)]
-                    ;; now @current-time
-                    ;; next (+ now time-step)
-
-                ;; (reset! current-time next)
                 (.set (.-value (.-iResolution (:uniforms three))) width height 1)
                 (set! (.-value (.-iTime (:uniforms three))) (* now 0.001))
                 (render-scene three))
