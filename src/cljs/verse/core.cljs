@@ -44,10 +44,6 @@
                 (set! (.-value (.-u_time uniforms)) (* now 0.001))
                 (three/render-scene three))
               (js/requestAnimationFrame animate))]
-      (set!
-       (.-onmousemove js/document)
-       (fn [e]
-         (.set (.-value (.-u_mouse uniforms)) (.-pageX e) (.-pageY e))))
       (js/requestAnimationFrame animate)
       [:<>])))
 

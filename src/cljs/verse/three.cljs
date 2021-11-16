@@ -83,10 +83,18 @@
 (defn make-shader-scene
   [fragment]
   (let [three (make-scene make-orthographic-camera)
+        uniforms (:uniforms three)
         geometry (js/THREE.PlaneGeometry. 2 2)
-        shader (make-shader-material (:uniforms three) fragment)
+        shader (make-shader-material uniforms fragment)
         plane (js/THREE.Mesh. geometry shader)]
     (.add (:scene three) plane)
+    (set!
+     (.-onmousemove js/document)
+     (fn [e]
+       (.set
+        (.-value (.-u_mouse uniforms))
+        (.-pageX e)
+        (.-pageY e))))
     (assoc three :plane plane)))
 
 (defn render-scene
