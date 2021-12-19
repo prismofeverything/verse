@@ -1,8 +1,5 @@
 (ns verse.journey)
 
-{[0 0] [10.0 20.0]
- [0 1] [10.0 30.0]}
-
 (defn hex-positions
   [rings distance]
   (let [top-half
@@ -26,4 +23,4 @@
          (take (dec rings) top-half))]
     (concat top-half (reverse bottom-half))))
 
-(def positions (hex-positions 4 20.0))
+
