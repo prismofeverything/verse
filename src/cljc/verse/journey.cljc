@@ -1,18 +1,24 @@
 (ns verse.journey)
 
+(defn shift-expand
+  [y left-side space]
+  [(- space left-side) y])
+  
+
+
+  
 (defn hex-positions
-  [rings distance]
+  [num-rings distance]
   (let [top-half
         (map
          (fn [ring]
-           (let [spaces (+ rings ring)
-                 y (- (dec rings) ring)
-                 left-side (int (Math/floor (* (dec spaces) 0.5)))]
+           (let [num-spaces (+ num-rings ring)
+                 y (- (dec num-rings) ring)
+                 left-side (int (Math/floor (* (dec num-spaces) 0.5)))]
              (map
-              (fn [space]
-                [(- space left-side) y])
-              (range spaces))))
-         (range rings))
+              (partial shift-expand y left-side)
+              (range num-spaces))))
+         (range num-rings))
         bottom-half
         (map
          (fn [spaces]
@@ -20,7 +26,7 @@
             (fn [[x y]]
               [x (* -1 y)])
             spaces))
-         (take (dec rings) top-half))]
+         (take (dec num-rings) top-half))]
     (concat top-half (reverse bottom-half))))
 
 
