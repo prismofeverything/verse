@@ -1,5 +1,7 @@
 (ns verse.journey)
 
+;; this is leftover from the old way
+
 (defn shift-expand
   [y left-side space]
   [(- space left-side) y])
@@ -26,6 +28,8 @@
          (take (dec num-rings) top-half))]
     (concat top-half (reverse bottom-half))))
 
+;; deriving adjacencies from the name itself
+
 (defn mod6
   [n]
   (mod n 6))
@@ -37,8 +41,10 @@
     (and
      (<= skew 2)
      (if (= skew 2)
-       (let [side (mod6 (- (first skew) (last skew)))]
-         (#{1 5} side))
+       (let [side (mod6 (- (first directions) (last directions)))]
+         (or
+          (= side 1)
+          (= side 5)))
        true))))
 
 (defn opposite
