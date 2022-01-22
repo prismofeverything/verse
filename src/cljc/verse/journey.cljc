@@ -34,19 +34,6 @@
   [n]
   (mod n 6))
 
-(defn valid-space?
-  [space]
-  (let [directions (set space)
-        skew (count directions)]
-    (and
-     (<= skew 2)
-     (if (= skew 2)
-       (let [side (mod6 (- (first directions) (last directions)))]
-         (or
-          (= side 1)
-          (= side 5)))
-       true))))
-
 (defn opposite
   [n]
   (mod6 (+ 3 n)))
@@ -55,11 +42,25 @@
   [a b]
   (= 3 (mod6 (- a b))))
 
+(defn adjacent?
+  [a b]
+  (= 1 (Math/abs (mod6 (- a b)))))
+  
+(defn valid-space?
+  [space]
+  (let [directions (set space)
+        skew (count directions)]
+    (and
+     (<= skew 2)
+     (if (= skew 2)
+       (adjacent? (first directions) (last directions))
+       true))))
+
 (defn vec-remove
-  [coll index]
+  [v index]
   (into
-   (subvec coll 0 index)
-   (subvec coll (inc index))))
+   (subvec v 0 index)
+   (subvec v (inc index))))
 
 (defn remove-direction
   [space direction]
@@ -72,13 +73,21 @@
   [space direction]
   (let [directions (set space)]
     (cond
-      ;; deal with spaces in only one direction that add a new adjacent direction
-      (directions direction) (conj space direction)
-      (some (partial opposite? direction) directions) (remove-direction space (opposite direction))
+      (or
+       (directions direction)
+       (and
+        (= (count directions) 1)
+        (adjacent? (first directions) direction))
+      (conj space direction)
+
+      (some (partial opposite? direction) directions)
+      (remove-direction space (opposite direction))
+
       ;; deal with spaces that have elements that are two away from direction
+      
       )))
 
-(defn generate-board
+(defn generate-spaces
   [rings])
 
 
