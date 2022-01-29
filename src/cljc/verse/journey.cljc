@@ -34,18 +34,26 @@
   [n]
   (mod n 6))
 
-(defn opposite
+(defn opposite-direction
   [n]
   (mod6 (+ 3 n)))
 
-(defn opposite?
-  [a b]
-  (= 3 (mod6 (- a b))))
+(defn direction-difference?
+  [differences a b]
+  (let [between (mod6 (- a b))]
+    (some
+     (partial = between)
+     differences)))
 
-(defn adjacent?
-  [a b]
-  (= 1 (Math/abs (mod6 (- a b)))))
-  
+(def opposite-direction?
+  (partial direction-difference? [3]))
+
+(def lateral-direction?
+  (partial direction-difference? [2 4]))
+
+(def adjacent-direction?
+  (partial direction-difference? [1 5]))
+
 (defn valid-space?
   [space]
   (let [directions (set space)
@@ -53,7 +61,7 @@
     (and
      (<= skew 2)
      (if (= skew 2)
-       (adjacent? (first directions) (last directions))
+       (adjacent-direction? (first directions) (last directions))
        true))))
 
 (defn vec-remove
@@ -69,6 +77,11 @@
       (vec-remove space index))
     space))
 
+(defn trajectory-sort
+  "take unsorted space and sort it according to major and minor axis"
+  [space]
+  space)
+
 (defn apply-direction
   [space direction]
   (let [directions (set space)]
@@ -77,11 +90,11 @@
        (directions direction)
        (and
         (= (count directions) 1)
-        (adjacent? (first directions) direction))
+        (adjacent-direction? (first directions) direction)))
       (conj space direction)
 
-      (some (partial opposite? direction) directions)
-      (remove-direction space (opposite direction))
+      (some (partial opposite-direction? direction) directions)
+      (remove-direction space (opposite-direction direction))
 
       ;; deal with spaces that have elements that are two away from direction
       
