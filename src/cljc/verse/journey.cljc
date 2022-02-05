@@ -77,6 +77,21 @@
       (vec-remove space index))
     space))
 
+(defn pull-towards
+  [direction original]
+  (mod6
+   (if (#{2} (mod6 (- direction original)))
+     (inc original)
+     (dec original))))
+
+(defn pull-direction
+  [space direction]
+  (cond
+    (= (count (set space)) 1)
+    (update space (dec (count space)) (partial pull-towards direction))))
+
+;; deal with cases with 2 directions ;;
+
 (defn trajectory-sort
   "take unsorted space and sort it according to major and minor axis"
   [space]
@@ -96,6 +111,9 @@
       (some (partial opposite-direction? direction) directions)
       (remove-direction space (opposite-direction direction))
 
+      (some (partial lateral-direction? direction) directions)
+      (pull-direction space direction)
+      
       ;; deal with spaces that have elements that are two away from direction
       
       )))
