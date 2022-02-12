@@ -80,18 +80,28 @@
 (defn pull-towards
   [direction original]
   (mod6
-   (if (#{2} (mod6 (- direction original)))
+   (if (= 2 (mod6 (- direction original)))
      (inc original)
      (dec original))))
+
+(defn find-index
+  [find s]
+  (first
+   (first
+    (filter
+     (fn [[index el]]
+       (find el))
+     (map vector (range) s)))))
 
 (defn pull-direction
   [space direction]
   (cond
     (= (count (set space)) 1)
-    (update space (dec (count space)) (partial pull-towards direction))))
-
-;; deal with cases with 2 directions ;;
-
+    (update space (dec (count space)) (partial pull-towards direction))
+    (= (count (set space)) 2)
+    (let [index (find-index (partial lateral-direction? direction) space)]
+      (update space index (partial pull-towards direction)))))
+    
 (defn trajectory-sort
   "take unsorted space and sort it according to major and minor axis"
   [space]
@@ -112,11 +122,7 @@
       (remove-direction space (opposite-direction direction))
 
       (some (partial lateral-direction? direction) directions)
-      (pull-direction space direction)
-      
-      ;; deal with spaces that have elements that are two away from direction
-      
-      )))
+      (pull-direction space direction))))
 
 (defn generate-spaces
   [rings])
