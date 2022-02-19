@@ -97,7 +97,8 @@
   [space direction]
   (cond
     (= (count (set space)) 1)
-    (update space (dec (count space)) (partial pull-towards direction))
+    (let [final-index (dec (count space))]
+      (update space final-index (partial pull-towards direction)))
     (= (count (set space)) 2)
     (let [index (find-index (partial lateral-direction? direction) space)]
       (update space index (partial pull-towards direction)))))
@@ -109,22 +110,32 @@
 
 (defn apply-direction
   [space direction]
-  (let [directions (set space)]
-    (cond
-      (or
-       (directions direction)
-       (and
-        (= (count directions) 1)
-        (adjacent-direction? (first directions) direction)))
-      (conj space direction)
+  (if (valid-space? space)
+    (let [directions (set space)
+          direction (mod6 direction)]
+      (cond
+        (or
+         (directions direction)
+         (and
+          (= (count directions) 1)
+          (adjacent-direction? (first directions) direction)))
+        (conj space direction)
 
-      (some (partial opposite-direction? direction) directions)
-      (remove-direction space (opposite-direction direction))
+        (some (partial opposite-direction? direction) directions)
+        (remove-direction space (opposite-direction direction))
 
-      (some (partial lateral-direction? direction) directions)
-      (pull-direction space direction))))
+        (some (partial lateral-direction? direction) directions)
+        (pull-direction space direction)))
+    (throw (Exception. (str "not valid space: " space)))))
 
 (defn generate-spaces
   [rings])
 
-
+(defn new-game
+  [rings things players]
+  (let [spaces (generate-spaces rings)]
+    {:rings rings
+     :spaces spaces
+     :ship {:velocity [0]}
+     :things things
+     :players players})
