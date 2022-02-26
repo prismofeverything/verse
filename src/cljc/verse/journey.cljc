@@ -70,20 +70,6 @@
    (subvec v 0 index)
    (subvec v (inc index))))
 
-(defn remove-direction
-  [space direction]
-  (if (some #{direction} space)
-    (let [index (.indexOf space direction)]
-      (vec-remove space index))
-    space))
-
-(defn pull-towards
-  [direction original]
-  (mod6
-   (if (= 2 (mod6 (- direction original)))
-     (inc original)
-     (dec original))))
-
 (defn find-index
   [find s]
   (first
@@ -92,6 +78,19 @@
      (fn [[index el]]
        (find el))
      (map vector (range) s)))))
+
+(defn remove-direction
+  [space direction]
+  (if-let [index (find-index (partial = direction) space)]
+    (vec-remove space index)
+    space))
+
+(defn pull-towards
+  [direction original]
+  (mod6
+   (if (= 2 (mod6 (- direction original)))
+     (inc original)
+     (dec original))))
 
 (defn pull-direction
   [space direction]
@@ -106,8 +105,14 @@
 (defn trajectory-sort
   "take unsorted space and sort it according to major and minor axis"
   [space]
-  space)
-
+  (let [new-space (apply-trajectory [] space)
+        directions (set space)]
+    (cond
+      (or
+       (empty? space)
+       (= (count directions) 1))
+      (take (count space) (cycle directions)))
+      
 (defn apply-direction
   [space direction]
   (if (valid-space? space)
@@ -115,6 +120,7 @@
           direction (mod6 direction)]
       (cond
         (or
+         (empty? space)
          (directions direction)
          (and
           (= (count directions) 1)
@@ -128,6 +134,13 @@
         (pull-direction space direction)))
     (throw (Exception. (str "not valid space: " space)))))
 
+(defn apply-trajectory
+  [space trajectory]
+  (reduce
+   apply-direction
+   space
+   trajectory))
+  
 (defn generate-spaces
   [rings])
 
@@ -138,4 +151,4 @@
      :spaces spaces
      :ship {:velocity [0]}
      :things things
-     :players players})
+     :players players}))
