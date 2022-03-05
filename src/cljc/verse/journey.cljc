@@ -101,18 +101,7 @@
     (= (count (set space)) 2)
     (let [index (find-index (partial lateral-direction? direction) space)]
       (update space index (partial pull-towards direction)))))
-    
-(defn trajectory-sort
-  "take unsorted space and sort it according to major and minor axis"
-  [space]
-  (let [new-space (apply-trajectory [] space)
-        directions (set space)]
-    (cond
-      (or
-       (empty? space)
-       (= (count directions) 1))
-      (take (count space) (cycle directions)))
-      
+
 (defn apply-direction
   [space direction]
   (if (valid-space? space)
@@ -141,6 +130,25 @@
    space
    trajectory))
   
+(defn trajectory-sort
+  "take unsorted space and sort it according to major and minor axis"
+  [unordered-space]
+  (let [space (apply-trajectory [] unordered-space)
+        directions (set space)]
+    (if (or
+         (empty? space)
+         (= (count directions) 1))
+      space
+      (let [direction-counts (sort-by last > (frequencies space))
+            smaller-count (last (last direction-counts))
+            larger-count (last (first direction-counts))
+            cycle-length (* 2 smaller-count)
+            tail-length (- larger-count smaller-count)
+            ordered-directions (map first direction-counts)
+            front (take cycle-length (cycle ordered-directions))
+            back (repeat tail-length (first ordered-directions))]
+        (concat front back)))))
+      
 (defn generate-spaces
   [rings])
 
