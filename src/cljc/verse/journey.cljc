@@ -34,6 +34,10 @@
   [n]
   (mod n 6))
 
+(def mod11
+  (fn [n]
+    (mod n 11)))
+
 (defn opposite-direction
   [n]
   (mod6 (+ 3 n)))
