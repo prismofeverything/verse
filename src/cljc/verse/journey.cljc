@@ -151,16 +151,38 @@
             ordered-directions (map first direction-counts)
             front (take cycle-length (cycle ordered-directions))
             back (repeat tail-length (first ordered-directions))]
-        (concat front back)))))
-      
+        (vec (concat front back))))))
+
+(defn generate-ring
+  [ring]
+  (if (zero? ring)
+    [[]]))
+  
+
 (defn generate-spaces
-  [rings])
+  [rings]
+  )
+
+(defn generate-features
+  [rings feature-count]
+  )
 
 (defn new-game
-  [rings things players]
+  [rings]
   (let [spaces (generate-spaces rings)]
     {:rings rings
      :spaces spaces
-     :ship {:velocity [0]}
-     :things things
-     :players players}))
+     :ship
+     :feature
+     {:velocity [0]
+      :position []}}))
+
+(defn move-ship
+  [game]
+  (let [velocity (get-in game [:ship :velocity])]
+    (update-in
+     game
+     [:ship :position]
+     (fn [position]
+       (trajectory-sort
+        (apply-trajectory position velocity))))))
