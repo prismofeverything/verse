@@ -153,11 +153,35 @@
             back (repeat tail-length (first ordered-directions))]
         (vec (concat front back))))))
 
+(defn generate-side
+  [initial-space direction ring]
+  (rest
+   (reverse
+    (reduce
+     (fn [side n]
+       (let [recent-space (first side)
+             next-space (apply-direction recent-space direction)]
+         (conj side next-space)))
+     (list initial-space)
+     (repeat ring 0)))))
+
 (defn generate-ring
   [ring]
   (if (zero? ring)
-    [[]]))
-  
+    [[]]
+    (let [initial-space (vec (repeat ring 0))
+          initial-direction 2]
+      (rest
+       (reverse
+        (reduce
+         (fn [sides direction]
+           (let [recent-side (first sides)
+                 recent-axis (last recent-side)
+                 next-side (generate-side recent-axis direction ring)]
+             (conj sides next-side)))
+         (list (list initial-space))
+         (map (fn [x] (mod6 (+ x initial-direction))) (range 6))))))))
+
 
 (defn generate-spaces
   [rings]
@@ -172,8 +196,7 @@
   (let [spaces (generate-spaces rings)]
     {:rings rings
      :spaces spaces
-     :ship
-     :feature
+     :ship 
      {:velocity [0]
       :position []}}))
 
