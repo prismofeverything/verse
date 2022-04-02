@@ -154,7 +154,7 @@
         (vec (concat front back))))))
 
 (defn generate-side
-  [initial-space direction ring]
+  [initial-space direction]
   (rest
    (reverse
     (reduce
@@ -163,7 +163,7 @@
              next-space (apply-direction recent-space direction)]
          (conj side next-space)))
      (list initial-space)
-     (repeat ring 0)))))
+     (repeat (count initial-space) 0)))))
 
 (defn generate-ring
   [ring]
@@ -171,34 +171,44 @@
     [[]]
     (let [initial-space (vec (repeat ring 0))
           initial-direction 2]
-      (rest
-       (reverse
-        (reduce
-         (fn [sides direction]
-           (let [recent-side (first sides)
-                 recent-axis (last recent-side)
-                 next-side (generate-side recent-axis direction ring)]
-             (conj sides next-side)))
-         (list (list initial-space))
-         (map (fn [x] (mod6 (+ x initial-direction))) (range 6))))))))
+      (apply
+       concat
+       (rest
+        (reverse
+         (reduce
+          (fn [sides direction]
+            (let [recent-side (first sides)
+                  recent-axis (last recent-side)
+                  next-side (generate-side recent-axis direction)]
+              (conj sides next-side)))
+          (list (list initial-space))
+          (map (fn [x] (mod6 (+ x initial-direction))) (range 6)))))))))
 
 
 (defn generate-spaces
   [rings]
-  )
+  (apply
+   concat
+   (map generate-ring (range rings))))
 
 (defn generate-features
   [rings feature-count]
-  )
+  (take feature-count (shuffle (generate-spaces rings))))
 
 (defn new-game
-  [rings]
-  (let [spaces (generate-spaces rings)]
+  [rings feature-count]
+  (let [;; spaces (generate-spaces rings)
+        features (generate-features rings feature-count)]
     {:rings rings
-     :spaces spaces
+     ;; :spaces spaces
+     :features features
      :ship 
      {:velocity [0]
       :position []}}))
+
+(defn out-of-bounds?
+  [rings space]
+  )
 
 (defn move-ship
   [game]
