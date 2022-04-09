@@ -107,25 +107,27 @@
       (update space index (partial pull-towards direction)))))
 
 (defn apply-direction
-  [space direction]
-  (if (valid-space? space)
-    (let [directions (set space)
-          direction (mod6 direction)]
-      (cond
-        (or
-         (empty? space)
-         (directions direction)
-         (and
-          (= (count directions) 1)
-          (adjacent-direction? (first directions) direction)))
-        (conj space direction)
+  [unsorted-space direction]
+  (let [space (mapv mod6 unsorted-space)
+        directions (set space)
+        direction (mod6 direction)]
+    (cond
+      (or
+       (empty? space)
+       (directions direction)
+       (and
+        (= (count directions) 1)
+        (adjacent-direction? (first directions) direction)))
+      (conj space direction)
 
-        (some (partial opposite-direction? direction) directions)
-        (remove-direction space (opposite-direction direction))
+      (some (partial opposite-direction? direction) directions)
+      (remove-direction space (opposite-direction direction))
 
-        (some (partial lateral-direction? direction) directions)
-        (pull-direction space direction)))
-    (throw (Exception. (str "not valid space: " space)))))
+      (some (partial lateral-direction? direction) directions)
+      (pull-direction space direction)
+
+      true
+      (conj space direction))))
 
 (defn apply-trajectory
   [space trajectory]
@@ -208,7 +210,17 @@
 
 (defn out-of-bounds?
   [rings space]
-  )
+  (let [direction-count (count space)]
+    (<= direction-count rings)))
+
+;; apply-direction should maintain the sort in all cases
+;;   example space: [2 3 4] 
+
+(defn sort-matters?
+  [f space]
+  (not
+   (= (f (trajectory-sort space))
+      (trajectory-sort (f space)))))
 
 (defn move-ship
   [game]
