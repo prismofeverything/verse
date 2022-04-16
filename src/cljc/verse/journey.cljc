@@ -194,15 +194,39 @@
    (map generate-ring (range rings))))
 
 (defn generate-features
-  [rings feature-count]
-  (take feature-count (shuffle (generate-spaces rings))))
+  [rings feature-count buffer]
+  (let [all-spaces (generate-spaces rings)
+        spaces (filter (fn [space] (> (count space) buffer)) all-spaces)
+        feature-spaces (take feature-count (shuffle spaces))
+        features (map (fn [space] [space :unknown]) feature-spaces)]
+    (into {} features)))
+
+(def example-features
+  {:asteroids 13
+   :system-four 3
+   :system-three 4
+   :system-two 5
+   :system-one 6
+   :black-hole 3
+   :artifact 10})
+
+(defn possible-features
+  [feature-spec]
+  (apply
+   concat
+   (map
+    (fn [type]
+      (repeat (last type) (first type)))
+    feature-spec)))
 
 (defn new-game
-  [rings feature-count]
+  [rings feature-count feature-spec]
   (let [;; spaces (generate-spaces rings)
-        features (generate-features rings feature-count)]
+        possible (possible-features feature-spec)
+        features (generate-features rings feature-count 1)]
     {:rings rings
      ;; :spaces spaces
+     :possible possible
      :features features
      :ship 
      {:velocity [0]
@@ -213,7 +237,7 @@
   (let [direction-count (count space)]
     (<= direction-count rings)))
 
-;; apply-direction should maintain the sort in all cases
+;; should apply-direction maintain the sort in all cases?
 ;;   example space: [2 3 4] 
 
 (defn sort-matters?
@@ -231,3 +255,14 @@
      (fn [position]
        (trajectory-sort
         (apply-trajectory position velocity))))))
+
+(defn reveal-feature
+  [game space]
+  (let [existing (get-in game [:features space])] 
+    (cond
+      (empty? existing)
+      game
+      (= existing :unknown)
+      ;; shuffle :possible take the first one and remove it from list and replace :unknown with the feature
+      game
+      )))
