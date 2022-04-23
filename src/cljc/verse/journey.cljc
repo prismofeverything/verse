@@ -202,15 +202,29 @@
     (into {} features)))
 
 (def example-features
-  {:asteroids 13
-   :system-four 3
-   :system-three 4
-   :system-two 5
-   :system-one 6
-   :black-hole 3
-   :artifact 10})
+  {{:asteroids 0} 13
+   {:star 4} 3
+   {:star 3} 4
+   {:star 2} 5
+   {:star 1} 6
+   {:black-hole 5} 3
+   {:artifact -1} 10})
 
-(defn possible-features
+(def example-resources
+  {:water 5
+   :metal 5
+   :information 5
+   :air 5
+   :food 5
+   :energy 5
+   :biome 5
+   :waste 5})
+
+(def example-possible
+  {:features example-features
+   :resources example-resources})
+
+(defn generate-possible
   [feature-spec]
   (apply
    concat
@@ -220,13 +234,14 @@
     feature-spec)))
 
 (defn new-game
-  [rings feature-count feature-spec]
+  [rings feature-count possible-spec]
   (let [;; spaces (generate-spaces rings)
-        possible (possible-features feature-spec)
+        possible-features (generate-possible (get possible-spec :features))
+        possible-resources (generate-possible (get possible-spec :resources))
         features (generate-features rings feature-count 1)]
     {:rings rings
      ;; :spaces spaces
-     :possible possible
+     :possible {:features possible-features :resources possible-resources}
      :features features
      :ship 
      {:velocity [0]
@@ -260,9 +275,22 @@
   [game space]
   (let [existing (get-in game [:features space])] 
     (cond
-      (empty? existing)
+      (nil? existing)
       game
+
       (= existing :unknown)
-      ;; shuffle :possible take the first one and remove it from list and replace :unknown with the feature
-      game
-      )))
+      ;; pull this out into a function and apply to features and resources
+      (let [possible (shuffle (get-in game [:possible :features]))
+            revealed-feature (first possible)
+            game (assoc-in game [:possible :features] (rest possible))
+            game (assoc-in game [:features space] revealed-feature)]
+        game)
+
+      (get existing :star)
+      (let [gravity (get existing :star)
+            revealed-resources (count (get existing :resources))]
+        (if (< revealed-resources gravity)
+          game))
+
+      true
+      game)))
